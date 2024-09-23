@@ -27,16 +27,16 @@ g_m <- function(dataframe1, c1, c2) {
     return(m_data)
 }
 
-BMD2019_origin <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2019.xlsx")
-BMD2020_origin <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2020.xlsx", 
+BMD2019_origin <- read_excel("Sun Biology analysis/骨密度数据（原始）/2019.xlsx")
+BMD2020_origin <- read_excel("Sun Biology analysis/骨密度数据（原始）/2020.xlsx", 
                                   col_types = c("text", "numeric", "text", 
                                                 "text", "text", "text", "numeric", 
                                                 "numeric", "text", "text", "numeric", 
                                                 "text", "numeric", "numeric", "text", 
                                                 "text", "numeric", "numeric", "numeric"))
-BMD2021_origin <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2021.xlsx")
-BMD2022_origin <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2022.xlsx")
-BMD2023_origin <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2023.xlsx")
+BMD2021_origin <- read_excel("Sun Biology analysis/骨密度数据（原始）/2021.xlsx")
+BMD2022_origin <- read_excel("Sun Biology analysis/骨密度数据（原始）/2022.xlsx")
+BMD2023_origin <- read_excel("Sun Biology analysis/骨密度数据（原始）/2023.xlsx")
 fill_time <- function(data) {
     # 确保时间列是字符型
     data$时间 <- as.character(data$时间)
@@ -53,18 +53,18 @@ fill_time <- function(data) {
 # 应用函数填充时间
 BMD2020_origin <- fill_time(BMD2020_origin)
 BMD2021_origin <- fill_time(BMD2021_origin)
-writexl::write_xlsx(BMD2020_origin,"/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2020.xlsx")
-writexl::write_xlsx(BMD2021_origin,"/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2021.xlsx")
+writexl::write_xlsx(BMD2020_origin,"Sun Biology analysis/骨密度数据（原始）/2020.xlsx")
+writexl::write_xlsx(BMD2021_origin,"Sun Biology analysis/骨密度数据（原始）/2021.xlsx")
 
-BMD2020 <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2020.xlsx", 
+BMD2020 <- read_excel("Sun Biology analysis/骨密度数据（原始）/2020.xlsx", 
                       col_types = c("text", "numeric", "text", 
                                     "text", "text", "text", "numeric", 
                                     "numeric", "text", "text", "numeric", 
                                     "text", "numeric", "numeric", "text", 
                                     "text", "numeric", "numeric", "numeric"))
-BMD2021 <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2021.xlsx")
-BMD2022 <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2022.xlsx")
-BMD2023 <- read_excel("/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/2023.xlsx")
+BMD2021 <- read_excel("Sun Biology analysis/骨密度数据（原始）/2021.xlsx")
+BMD2022 <- read_excel("Sun Biology analysis/骨密度数据（原始）/2022.xlsx")
+BMD2023 <- read_excel("Sun Biology analysis/骨密度数据（原始）/2023.xlsx")
 
 BMD2020$BMD <- BMD2020$...11
 BMD2020 <- BMD2020[, c("时间", "年龄", "性别", "BMD")]
@@ -102,7 +102,7 @@ BMDtotal <- rbind(BMD2020,BMD2021,BMD2022,BMD2023)
 writexl::write_xlsx(BMDtotal,"/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/total.xlsx")
 BMDtotal <- na.omit(BMDtotal)
 writexl::write_xlsx(BMDtotal,"/Volumes/Samsung_T5/Sun Biology analysis/骨密度数据（原始）/total_NA.xlsx")
-BMDtotal <- read_excel("~/Desktop/Sun Biology analysis/骨密度数据（原始）/total_NA.xlsx")
+BMDtotal <- read_excel("/骨密度数据（原始）/total_NA.xlsx")
 BMDtotal$年龄 <- as.numeric(BMDtotal$年龄)
 BMDtotal$old <- floor(BMDtotal$年龄 / 10)
 BMDtotal$week <- isoweek(BMDtotal$时间)
@@ -120,23 +120,23 @@ SN_origin$日期 <- as.Date(paste(SN_origin$V1,SN_origin$V2,SN_origin$V3,sep = '
 SN_origin$week <- isoweek(SN_origin$日期)
 SN_origin$week <- year(SN_origin$日期)*100+SN_origin$week
 SN <- data.frame(SN_origin$日期,SN_origin$week,SN_origin$V5)
-colnames(SN) <- c('日期','week','macula')
+colnames(SN) <- c('日期','week','sunspot')
 SN <- SN[SN$week >184900,]
-SN_new <- SN
-colnames(SN_new) <- c('time','week','SN')
-time_index <- 1:nrow(SN_new)
-model <- lm(SN ~ time_index, data = SN_new)
-SN_new$macula.detrended <- SN_new$SN - predict(model)
-SN$macula.detrend <- SN_new$macula.detrended
-weekly_SN_1 <- g_m(SN,'week',c('macula.detrend','macula'))
-weekly_SN_2 <- g_median(SN,'week',c('macula.detrend','macula'))
+colnames(SN) <- c('time','week','SN')
+SN <- SN[SN$week>=202032&SN$week<=202352,]
+time_index <- 1:nrow(SN)
+model <- lm(SN ~ time_index, data = SN)
+SN$sunspot.detrended <- SN$SN - predict(model)
+colnames(SN) <- c('time','week','sunspot','sunspot.detrend')
+weekly_SN_1 <- g_m(SN,'week',c('sunspot.detrend','sunspot'))
+weekly_SN_2 <- g_median(SN,'week',c('sunspot.detrend','sunspot'))
 weekly_SN <- merge(weekly_SN_1 ,weekly_SN_2 ,by = 'week')
 writexl::write_xlsx(weekly_SN,"骨密度数据（原始）/weekly_SN.xlsx")
 weekly_SN <- read_xlsx("骨密度数据（原始）/weekly_SN.xlsx")
-BMD_SN <- merge(BMD, weekly_SN[, c("week",'mean_macula','median_macula',"mean_macula.detrend",'median_macula.detrend')], by = "week", all.x = TRUE)
+BMD_SN <- merge(BMD, weekly_SN[, c("week",'mean_sunspot','median_sunspot',"mean_sunspot.detrend",'median_sunspot.detrend')], by = "week", all.x = TRUE)
 writexl::write_xlsx(BMD_SN,'骨密度数据（原始）/weekly_BMD_SN.xlsx')
 BMD_SN <- read_excel('骨密度数据（原始）/weekly_BMD_SN.xlsx')
 
-ccf <- ccf(BMD_SN$mean_macula.detrend,BMD_SN$mean_BMD)
+ccf <- ccf(BMD_SN$mean_sunspot.detrend,BMD_SN$mean_BMD)
 plot(BMD_SN$mean_BMD)
-plot(BMD_SN$mean_macula.detrend)
+plot(BMD_SN$mean_sunspot.detrend)
